@@ -20,14 +20,14 @@ const height = 3
 const minMaxScores = {
   X: 10,
   O: -10,
-  tie: 0,
+  Velha: 0,
 }
 
 const minimizer = 'O'
 const maximizer = 'X'
 
-const ai = 'O'
-const human = 'X'
+const ai = 'X'
+const human = 'O'
 let currentPlayer = human
 
 let board = [
@@ -186,40 +186,41 @@ function playTurn(player) {
 }
 
 function optimalMove() {
-  let bestScore = -Infinity
+  let bestScore = -1000
   let bestPos
 
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
       if (board[i][j] == '') {
-        board[i][j] = maximizer
+        board[i][j] = ai
         let score = minimax(board, 0, false)
-        console.log(score);
+        console.log(score)
         board[i][j] = ''
         if (score > bestScore) {
           bestScore = score
           bestPos = { i, j }
-          console.log(bestPos);
         }
       }
     }
   }
+  console.log(bestScore);
+  console.log(bestPos)
   board[bestPos.i][bestPos.j] = ai
 }
 
-function minimax(board, depth, isMaximizing) {
+function minimax(board, depth, isMax) {
   let result = checkWinner()
   if (result !== null) {
     return minMaxScores[result]
   }
 
-  if (isMaximizing) {
-    let bestScore = -Infinity
+  if (isMax) {
+    let bestScore = -1000
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         // Is the spot available?
         if (board[i][j] == '') {
-          board[i][j] = minimizer
+          board[i][j] = ai
           let score = minimax(board, depth + 1, false)
           board[i][j] = ''
           if (score > bestScore) {
@@ -230,12 +231,13 @@ function minimax(board, depth, isMaximizing) {
     }
     return bestScore
   } else {
-    let bestScore = Infinity
+    let bestScore = 1000
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         // Is the spot available?
         if (board[i][j] == '') {
-          board[i][j] = maximizer
+          board[i][j] = human
+          printBoard()
           let score = minimax(board, depth + 1, true)
           board[i][j] = ''
           if (score < bestScore) {
