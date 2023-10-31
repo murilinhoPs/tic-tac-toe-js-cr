@@ -194,7 +194,6 @@ function optimalMove() {
       if (board[i][j] == '') {
         board[i][j] = ai
         let score = minimax(board, 0, false)
-        console.log(score)
         board[i][j] = ''
         if (score > bestScore) {
           bestScore = score
@@ -203,8 +202,6 @@ function optimalMove() {
       }
     }
   }
-  console.log(bestScore);
-  console.log(bestPos)
   board[bestPos.i][bestPos.j] = ai
 }
 
@@ -237,7 +234,6 @@ function minimax(board, depth, isMax) {
         // Is the spot available?
         if (board[i][j] == '') {
           board[i][j] = human
-          printBoard()
           let score = minimax(board, depth + 1, true)
           board[i][j] = ''
           if (score < bestScore) {
