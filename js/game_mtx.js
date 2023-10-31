@@ -17,8 +17,17 @@ const prompt = require('prompt')
 const width = 3
 const height = 3
 
-const ai = 'X'
-const human = 'O'
+const minMaxScores = {
+  X: 10,
+  O: -10,
+  tie: 0,
+}
+
+const minimizer = 'O'
+const maximizer = 'X'
+
+const ai = 'O'
+const human = 'X'
 let currentPlayer = human
 
 let board = [
@@ -52,7 +61,6 @@ function markBoard(position, mark) {
   const flatBoard = returnFlatBoard()
   flatBoard[position] = mark.toUpperCase()
   board = [flatBoard.slice(0, 3), flatBoard.slice(3, 6), flatBoard.slice(6, 9)]
-
 }
 
 function logPrompt() {
@@ -141,11 +149,12 @@ function playTurn(player) {
 
   if (currentPlayer === ai) {
     //TODO do AI turn, after that call playTurn(human)
-    let randomPos = 0
-    do {
-      randomPos = Math.floor(Math.random() * 9)
-    } while (!validateMove(randomPos))
-    markBoard(randomPos, ai)
+    // let randomPos = 0
+    // do {
+    //   randomPos = Math.floor(Math.random() * 9)
+    // } while (!validateMove(randomPos))
+    // markBoard(randomPos, ai)
+    optimalMove()
     printBoard()
 
     if (checkWinner() === ai) {
@@ -174,6 +183,69 @@ function playTurn(player) {
 
     playTurn(ai)
   })
+}
+
+function optimalMove() {
+  let bestScore = -Infinity
+  let bestPos
+
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[i][j] == '') {
+        board[i][j] = maximizer
+        let score = minimax(board, 0, false)
+        console.log(score);
+        board[i][j] = ''
+        if (score > bestScore) {
+          bestScore = score
+          bestPos = { i, j }
+          console.log(bestPos);
+        }
+      }
+    }
+  }
+  board[bestPos.i][bestPos.j] = ai
+}
+
+function minimax(board, depth, isMaximizing) {
+  let result = checkWinner()
+  if (result !== null) {
+    return minMaxScores[result]
+  }
+
+  if (isMaximizing) {
+    let bestScore = -Infinity
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        // Is the spot available?
+        if (board[i][j] == '') {
+          board[i][j] = minimizer
+          let score = minimax(board, depth + 1, false)
+          board[i][j] = ''
+          if (score > bestScore) {
+            bestScore = score
+          }
+        }
+      }
+    }
+    return bestScore
+  } else {
+    let bestScore = Infinity
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        // Is the spot available?
+        if (board[i][j] == '') {
+          board[i][j] = maximizer
+          let score = minimax(board, depth + 1, true)
+          board[i][j] = ''
+          if (score < bestScore) {
+            bestScore = score
+          }
+        }
+      }
+    }
+    return bestScore
+  }
 }
 
 logPrompt()
