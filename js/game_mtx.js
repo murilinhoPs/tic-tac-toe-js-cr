@@ -26,6 +26,7 @@ const minMaxScores = {
 const minimizer = 'O'
 const maximizer = 'X'
 
+const tie = 'Velha!'
 const ai = 'O' // * minimizer
 const human = 'X' // * maximizer
 let currentPlayer = human
@@ -79,48 +80,28 @@ function logPrompt() {
 }
 
 function printBoard() {
-  console.log(
-    '\n' +
-      ' ' +
-      gameBoard[0][0] +
-      ' | ' +
-      gameBoard[0][1] +
-      ' | ' +
-      gameBoard[0][2] +
-      '\n' +
-      '--------\n' +
-      ' ' +
-      gameBoard[1][0] +
-      ' | ' +
-      gameBoard[1][1] +
-      ' | ' +
-      gameBoard[1][2] +
-      '\n' +
-      '--------\n' +
-      ' ' +
-      gameBoard[2][0] +
-      ' | ' +
-      gameBoard[2][1] +
-      ' | ' +
-      gameBoard[2][2] +
-      '\n',
-  )
+  console.log('\n' +
+  ' ' + board[0][0] + ' | ' + board[0][1] + ' | ' + board[0][2] + '\n' +
+  ' ---------\n' +
+  ' ' + board[1][0] + ' | ' + board[1][1] + ' | ' + [1][2] + '\n' +
+  ' ---------\n' +
+  ' ' + board[2][0] + ' | ' + board[2][1] + ' | ' + board[2][2] + '\n');
 }
 
 function checkWinner(board) {
-  let winner = ''
+  let winner = null
 
   // vertical match
-  for (let j = 0; j < height; j++) {
-    if (hasMatch3(board[0][j], board[1][j], board[2][j])) {
-      winner = board[0][j]
+  for (let col = 0; col < height; col++) {
+    if (hasMatch3(board[0][col], board[1][col], board[2][col])) {
+      winner = board[0][col]
     }
   }
 
   // horizontal match
-  for (let i = 0; i < width; i++) {
-    if (hasMatch3(board[i][0], board[i][1], board[i][2])) {
-      winner = board[i][0]
+  for (let row = 0; row < width; row++) {
+    if (hasMatch3(board[row][0], board[row][1], board[row][2])) {
+      winner = board[row][0]
     }
   }
 
@@ -140,35 +121,13 @@ function checkWinner(board) {
     }
   }
 
-  if (winner === '' && leftSpots === 0) {
+  if (winner === null && leftSpots === 0) {
     return 'Velha!'
   }
   return winner
 }
 
-function playTurn(player) {
-  currentPlayer = player
-  console.log('Your turn player: ' + currentPlayer)
-
-  if (currentPlayer === ai) {
-    //TODO do AI turn, after that call playTurn(human)
-    // let randomPos = 0
-    // do {
-    //   randomPos = Math.floor(Math.random() * 9)
-    // } while (!validateMove(randomPos))
-    // markBoard(randomPos, ai)
-    optimalMove()
-    printBoard()
-
-    if (checkWinner(gameBoard) === ai) {
-      console.log('You lost, AI wins!')
-      prompt.stop()
-      return
-    }
-    playTurn(human)
-    return
-  }
-
+function humanTurn() {
   prompt.start()
   prompt.get(['position'], function (err, result) {
     if (!validateMove(result.position - 1)) {
@@ -188,17 +147,55 @@ function playTurn(player) {
   })
 }
 
+function aiTurn() {
+  // let randomPos = 0
+  // do {
+  //   randomPos = Math.floor(Math.random() * 9)
+  // } while (!validateMove(randomPos))
+  // markBoard(randomPos, ai)
+  optimalMove()
+  printBoard()
+
+  if (checkWinner(gameBoard) === ai) {
+    console.log('You lost, AI wins!')
+    prompt.stop()
+    return
+  }
+
+  playTurn(human)
+}
+
+function playTurn(player) {
+  const checkTie = checkWinner(gameBoard)
+  if (checkTie === tie) {
+    console.log(checkTie)
+    prompt.stop()
+    return
+  }
+
+  currentPlayer = player
+  const [playerName] =
+    currentPlayer == ai ? Object.keys({ ai }) : Object.keys({ human })
+  console.log(`Your turn player: ${currentPlayer} -> ${playerName}`)
+
+  if (currentPlayer === ai) {
+    aiTurn()
+    return
+  }
+
+  humanTurn()
+}
+
 function optimalMove() {
   const result = minimax(gameBoard, 0, false)
-  console.log(result)
   const position = result.position
 
   gameBoard[position.x][position.y] = ai
 }
 
 function minimax(board, depth, isMax) {
-  let result = checkWinner(board)
-  if (result !== '') {
+  const result = checkWinner(board)
+  if (result !== null) {
     return { score: minMaxScores[result] }
   }
 
@@ -206,17 +203,17 @@ function minimax(board, depth, isMax) {
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
       if (gameBoard[row][col] == '') {
-        var move = {}
+        let move = {}
         move.position = { x: row, y: col }
 
         if (isMax) {
           gameBoard[row][col] = human
           const result = minimax(board, depth + 1, false)
-          move.score = result ? result.score : 1000
+          move.score = result ? result.score : Infinity
         } else {
           gameBoard[row][col] = ai
           const result = minimax(board, depth + 1, true)
-          move.score = result ? result.score : -1000
+          move.score = result ? result.score : -Infinity
         }
         gameBoard[row][col] = ''
 
@@ -227,7 +224,7 @@ function minimax(board, depth, isMax) {
 
   let bestMove, bestScore
   if (isMax) {
-    bestScore = -1000
+    bestScore = -Infinity
     for (let i = 0; i < moves.length; i++) {
       if (moves[i].score > bestScore) {
         bestScore = moves[i].score
@@ -235,7 +232,7 @@ function minimax(board, depth, isMax) {
       }
     }
   } else {
-    bestScore = 1000
+    bestScore = Infinity
     for (let i = 0; i < moves.length; i++) {
       if (moves[i].score < bestScore) {
         bestScore = moves[i].score
@@ -243,7 +240,6 @@ function minimax(board, depth, isMax) {
       }
     }
   }
-  console.error(moves[bestMove])
   return moves[bestMove]
 }
 
