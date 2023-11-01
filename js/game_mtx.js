@@ -26,21 +26,21 @@ const minMaxScores = {
 const minimizer = 'O'
 const maximizer = 'X'
 
-const ai = 'X'
-const human = 'O'
+const ai = 'O' // * minimizer
+const human = 'X' // * maximizer
 let currentPlayer = human
 
-let board = [
+let gameBoard = [
   ['', '', ''],
   ['', '', ''],
   ['', '', ''],
 ]
 
-const returnFlatBoard = () => board.flatMap((boardRow) => boardRow)
+const returnFlatBoard = (board) => board.flatMap((boardRow) => boardRow)
 
 const inPositionRange = (position) => position >= 0 && position <= 8
 
-const hasMatch3 = (a, b, c) => a == b && b == c && a != ''
+const hasMatch3 = (a, b, c) => a === b && b === c && a === c && a !== ''
 
 function isInt(value) {
   if (isNaN(value)) {
@@ -51,16 +51,20 @@ function isInt(value) {
 }
 
 function validateMove(position) {
-  const flatBoard = returnFlatBoard()
+  const flatBoard = returnFlatBoard(gameBoard)
   const notOccupied = flatBoard[position] === ''
 
   return isInt(position) && inPositionRange(position) && notOccupied
 }
 
 function markBoard(position, mark) {
-  const flatBoard = returnFlatBoard()
+  const flatBoard = returnFlatBoard(gameBoard)
   flatBoard[position] = mark.toUpperCase()
-  board = [flatBoard.slice(0, 3), flatBoard.slice(3, 6), flatBoard.slice(6, 9)]
+  gameBoard = [
+    flatBoard.slice(0, 3),
+    flatBoard.slice(3, 6),
+    flatBoard.slice(6, 9),
+  ]
 }
 
 function logPrompt() {
@@ -78,33 +82,33 @@ function printBoard() {
   console.log(
     '\n' +
       ' ' +
-      board[0][0] +
+      gameBoard[0][0] +
       ' | ' +
-      board[0][1] +
+      gameBoard[0][1] +
       ' | ' +
-      board[0][2] +
+      gameBoard[0][2] +
       '\n' +
       '--------\n' +
       ' ' +
-      board[1][0] +
+      gameBoard[1][0] +
       ' | ' +
-      board[1][1] +
+      gameBoard[1][1] +
       ' | ' +
-      board[1][2] +
+      gameBoard[1][2] +
       '\n' +
       '--------\n' +
       ' ' +
-      board[2][0] +
+      gameBoard[2][0] +
       ' | ' +
-      board[2][1] +
+      gameBoard[2][1] +
       ' | ' +
-      board[2][2] +
+      gameBoard[2][2] +
       '\n',
   )
 }
 
-function checkWinner() {
-  let winner = null
+function checkWinner(board) {
+  let winner = ''
 
   // vertical match
   for (let j = 0; j < height; j++) {
@@ -136,11 +140,10 @@ function checkWinner() {
     }
   }
 
-  if (winner === null && leftSpots === 0) {
+  if (winner === '' && leftSpots === 0) {
     return 'Velha!'
-  } else {
-    return winner
   }
+  return winner
 }
 
 function playTurn(player) {
@@ -157,7 +160,7 @@ function playTurn(player) {
     optimalMove()
     printBoard()
 
-    if (checkWinner() === ai) {
+    if (checkWinner(gameBoard) === ai) {
       console.log('You lost, AI wins!')
       prompt.stop()
       return
@@ -175,7 +178,7 @@ function playTurn(player) {
     }
     markBoard(result.position - 1, human)
     printBoard()
-    if (checkWinner() === human) {
+    if (checkWinner(gameBoard) === human) {
       console.log('Winner Winner!')
       prompt.stop()
       return
@@ -186,64 +189,62 @@ function playTurn(player) {
 }
 
 function optimalMove() {
-  let bestScore = -1000
-  let bestPos
+  const result = minimax(gameBoard, 0, false)
+  console.log(result)
+  const position = result.position
 
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      if (board[i][j] == '') {
-        board[i][j] = ai
-        let score = minimax(board, 0, false)
-        board[i][j] = ''
-        if (score > bestScore) {
-          bestScore = score
-          bestPos = { i, j }
-        }
-      }
-    }
-  }
-  board[bestPos.i][bestPos.j] = ai
+  gameBoard[position.x][position.y] = ai
 }
 
 function minimax(board, depth, isMax) {
-  let result = checkWinner()
-  if (result !== null) {
-    return minMaxScores[result]
+  let result = checkWinner(board)
+  if (result !== '') {
+    return { score: minMaxScores[result] }
   }
 
-  if (isMax) {
-    let bestScore = -1000
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        // Is the spot available?
-        if (board[i][j] == '') {
-          board[i][j] = ai
-          let score = minimax(board, depth + 1, false)
-          board[i][j] = ''
-          if (score > bestScore) {
-            bestScore = score
-          }
+  let moves = []
+  for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 3; col++) {
+      if (gameBoard[row][col] == '') {
+        var move = {}
+        move.position = { x: row, y: col }
+
+        if (isMax) {
+          gameBoard[row][col] = human
+          const result = minimax(board, depth + 1, false)
+          move.score = result ? result.score : 1000
+        } else {
+          gameBoard[row][col] = ai
+          const result = minimax(board, depth + 1, true)
+          move.score = result ? result.score : -1000
         }
+        gameBoard[row][col] = ''
+
+        moves.push(move)
       }
     }
-    return bestScore
-  } else {
-    let bestScore = 1000
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        // Is the spot available?
-        if (board[i][j] == '') {
-          board[i][j] = human
-          let score = minimax(board, depth + 1, true)
-          board[i][j] = ''
-          if (score < bestScore) {
-            bestScore = score
-          }
-        }
-      }
-    }
-    return bestScore
   }
+
+  let bestMove, bestScore
+  if (isMax) {
+    bestScore = -1000
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score > bestScore) {
+        bestScore = moves[i].score
+        bestMove = i
+      }
+    }
+  } else {
+    bestScore = 1000
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].score < bestScore) {
+        bestScore = moves[i].score
+        bestMove = i
+      }
+    }
+  }
+  console.error(moves[bestMove])
+  return moves[bestMove]
 }
 
 logPrompt()
