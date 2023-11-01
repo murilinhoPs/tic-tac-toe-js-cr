@@ -81,11 +81,11 @@ function logPrompt() {
 
 function printBoard() {
   console.log('\n' +
-  ' ' + board[0][0] + ' | ' + board[0][1] + ' | ' + board[0][2] + '\n' +
+  ' ' + gameBoard[0][0] + ' | ' + gameBoard[0][1] + ' | ' + gameBoard[0][2] + '\n' +
   ' ---------\n' +
-  ' ' + board[1][0] + ' | ' + board[1][1] + ' | ' + [1][2] + '\n' +
+  ' ' + gameBoard[1][0] + ' | ' + gameBoard[1][1] + ' | ' + gameBoard[1][2] + '\n' +
   ' ---------\n' +
-  ' ' + board[2][0] + ' | ' + board[2][1] + ' | ' + board[2][2] + '\n');
+  ' ' + gameBoard[2][0] + ' | ' + gameBoard[2][1] + ' | ' + gameBoard[2][2] + '\n');
 }
 
 function checkWinner(board) {
