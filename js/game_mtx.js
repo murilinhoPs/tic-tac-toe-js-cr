@@ -1,4 +1,4 @@
-/*  A simple Tic-Tac-Toe game implemented in Javascrip
+/*  A simple Tic-Tac-Toe game implemented in Javascript
 
 Players 'X' and 'O' take turn inputing their position on the command line using numbers 1-9
 
@@ -209,11 +209,11 @@ function minimax(board, depth, isMax) {
         if (isMax) {
           gameBoard[row][col] = human
           const result = minimax(board, depth + 1, false)
-          move.score = result ? result.score : Infinity
+          move.score = result ? result.score : null
         } else {
           gameBoard[row][col] = ai
           const result = minimax(board, depth + 1, true)
-          move.score = result ? result.score : -Infinity
+          move.score = result ? result.score : null
         }
         gameBoard[row][col] = ''
 
