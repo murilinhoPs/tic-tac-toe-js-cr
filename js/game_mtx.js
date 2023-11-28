@@ -80,12 +80,32 @@ function logPrompt() {
 }
 
 function printBoard() {
-  console.log('\n' +
-  ' ' + gameBoard[0][0] + ' | ' + gameBoard[0][1] + ' | ' + gameBoard[0][2] + '\n' +
-  ' ---------\n' +
-  ' ' + gameBoard[1][0] + ' | ' + gameBoard[1][1] + ' | ' + gameBoard[1][2] + '\n' +
-  ' ---------\n' +
-  ' ' + gameBoard[2][0] + ' | ' + gameBoard[2][1] + ' | ' + gameBoard[2][2] + '\n');
+  console.log(
+    '\n' +
+      ' ' +
+      gameBoard[0][0] +
+      ' | ' +
+      gameBoard[0][1] +
+      ' | ' +
+      gameBoard[0][2] +
+      '\n' +
+      ' ---------\n' +
+      ' ' +
+      gameBoard[1][0] +
+      ' | ' +
+      gameBoard[1][1] +
+      ' | ' +
+      gameBoard[1][2] +
+      '\n' +
+      ' ---------\n' +
+      ' ' +
+      gameBoard[2][0] +
+      ' | ' +
+      gameBoard[2][1] +
+      ' | ' +
+      gameBoard[2][2] +
+      '\n',
+  )
 }
 
 function checkWinner(board) {
@@ -148,10 +168,7 @@ function humanTurn() {
 }
 
 function aiTurn() {
-  // let randomPos = 0
-  // do {
-  //   randomPos = Math.floor(Math.random() * 9)
-  // } while (!validateMove(randomPos))
+  // const randomPos = randomAI()
   // markBoard(randomPos, ai)
   optimalMove()
   printBoard()
@@ -163,6 +180,15 @@ function aiTurn() {
   }
 
   playTurn(human)
+}
+
+function randomAI() {
+  let randomPos = 0
+  do {
+    randomPos = Math.floor(Math.random() * 9)
+  } while (!validateMove(randomPos))
+
+  return randomPos
 }
 
 function playTurn(player) {
